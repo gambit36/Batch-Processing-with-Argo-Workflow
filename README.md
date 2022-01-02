@@ -69,3 +69,27 @@ kubectl get job/whalesay
 NAME       COMPLETIONS   DURATION   AGE
 whalesay   1/1           3s         21s
 ```
+
+确认输出
+
+···
+kubectl logs -l job-name=whalesay
+···
+
+···
+
+ ___________________________ 
+< This is a Kubernetes Job! >
+ --------------------------- 
+    \
+     \
+      \     
+                    ##        .            
+              ## ## ##       ==            
+           ## ## ## ##      ===            
+       /""""""""""""""""___/ ===        
+  ~~~ {~~ ~~~~ ~~~ ~~~~ ~~ ~ /  ===- ~~~   
+       \______ o          __/            
+        \    \        __/             
+          \____\______/   
+···
