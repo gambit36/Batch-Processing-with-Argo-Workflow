@@ -76,7 +76,7 @@ whalesay   1/1           3s         21s
 kubectl logs -l job-name=whalesay
 ···
 
-···
+```
 
  ___________________________ 
 < This is a Kubernetes Job! >
@@ -92,4 +92,4 @@ kubectl logs -l job-name=whalesay
        \______ o          __/            
         \    \        __/             
           \____\______/   
-···
+```
