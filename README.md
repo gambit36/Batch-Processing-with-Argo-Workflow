@@ -93,3 +93,30 @@ kubectl logs -l job-name=whalesay
         \    \        __/             
           \____\______/   
 ```
+## 安装 Argo CLI
+在我们开始配置 argo 之前，我们需要先安装您将与之交互的命令行工具。 为此，请运行以下命令。 
+```
+# set argo version
+export ARGO_VERSION="v2.12.13"
+```
+```
+# Download the binary
+curl -sLO https://github.com/argoproj/argo-workflows/releases/download/${ARGO_VERSION}/argo-linux-amd64.gz
+
+# Unzip
+gunzip argo-linux-amd64.gz
+
+# Make binary executable
+chmod +x argo-linux-amd64
+
+# Move binary to path
+sudo mv ./argo-linux-amd64 /usr/local/bin/argo
+
+# Test installation
+argo version --short
+```
+输出
+```
+
+argo: v2.12.13
+```
