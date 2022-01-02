@@ -14,3 +14,6 @@ Argo Workflows 是一个开源容器原生工作流引擎，用于在 Kubernetes
 
 Argo is a [Cloud Native Computing Foundation (CNCF)](https://cncf.io/) hosted project.
 
+### 介绍 
+批处理是指以重复和无人值守的方式执行工作单元，称为作业。 作业通常组合在一起并分批处理（因此得名）。 
+Kubernetes 包括对[运行作业](https://kubernetes.io/docs/concepts/workloads/controllers/jobs-run-to-completion/)的原生支持。 作业可以并行运行多个 Pod，直到收到一定数量的完成。 每个 Pod 可以包含多个容器作为单个工作单元。
