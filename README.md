@@ -33,7 +33,7 @@ Argo 通过引入许多功能来增强批处理体验：
 
 让我们从使用此命令创建 job-whalesay.yaml 清单开始 
 
-```json
+```
 mkdir  ~/environment/batch_policy/
 
 cat <<EoF > ~/environment/batch_policy/job-whalesay.yaml
