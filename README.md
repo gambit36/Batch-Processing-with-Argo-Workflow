@@ -27,3 +27,27 @@ Argo 通过引入许多功能来增强批处理体验：
 * …和更多 
 
 在本模块中，我们将构建一个简单的 Kubernetes 作业，在 Argo 中重新创建该作业，并为更高级的批处理添加通用功能和工作流。
+
+## Kubernetes Jobs 
+一项作业创建一个或多个 Pod，并确保指定数量的 Pod 成功终止。 当 Pod 成功完成时，该作业会跟踪成功完成情况。 当达到指定的成功完成次数时，作业本身就完成了。 删除 Job 将清理它创建的 Pod。
+
+让我们从使用此命令创建 job-whalesay.yaml 清单开始 
+
+···mkdir  ~/environment/batch_policy/
+
+cat <<EoF > ~/environment/batch_policy/job-whalesay.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: whalesay
+spec:
+  template:
+    spec:
+      containers:
+      - name: whalesay
+        image: docker/whalesay
+        command: ["cowsay",  "This is a Kubernetes Job!"]
+      restartPolicy: Never
+  backoffLimit: 4
+EoF
+ ···
