@@ -53,3 +53,19 @@ spec:
 EoF
 
 ```
+
+使用 whalesay image 运行示例 Kubernetes 作业。 
+
+```
+kubectl apply -f ~/environment/batch_policy/job-whalesay.yaml
+```
+
+等待作业成功完成。 
+```
+kubectl get job/whalesay
+```
+
+```
+NAME       COMPLETIONS   DURATION   AGE
+whalesay   1/1           3s         21s
+```
