@@ -33,21 +33,15 @@ Argo 通过引入许多功能来增强批处理体验：
 
 让我们从使用此命令创建 job-whalesay.yaml 清单开始 
 
-···mkdir  ~/environment/batch_policy/
-
-cat <<EoF > ~/environment/batch_policy/job-whalesay.yaml
-apiVersion: batch/v1
-kind: Job
-metadata:
-  name: whalesay
-spec:
-  template:
-    spec:
-      containers:
-      - name: whalesay
-        image: docker/whalesay
-        command: ["cowsay",  "This is a Kubernetes Job!"]
-      restartPolicy: Never
-  backoffLimit: 4
-EoF
-···
+```json
+{
+     "scylla_yaml": {
+         "cluster_name": "test-cluster",
+         "experimental": true,
+         "seed_provider": [{"class_name": "org.apache.cassandra.locator.SimpleSeedProvider",
+                            "parameters": [{"seeds": "10.0.219.209"}]}],
+     },
+     "post_configuration_script": "#! /bin/bash\nyum install cloud-init-cfn",
+     "start_scylla_on_first_boot": true
+}
+```
