@@ -72,9 +72,9 @@ whalesay   1/1           3s         21s
 
 确认输出
 
-···
+```
 kubectl logs -l job-name=whalesay
-···
+```
 
 ```
 
