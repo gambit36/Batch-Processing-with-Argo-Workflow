@@ -496,3 +496,7 @@ STEP               TEMPLATE         PODNAME                    DURATION  MESSAGE
  ├-✔ Hotel         whalesay-reduce  teardrop-vqbmb-3381869223  8s
  └-✔ Golf          whalesay-reduce  teardrop-vqbmb-1766004759  8s
  ```
+
+## Argo Dashboard ##
+
+从 V2.5 开始，Argo UI 已被 Argo Server 取代。 新 UI 不是只读的——它还具有直接在浏览器中创建和更新数据的能力。 点击[这里](https://blog.argoproj.io/argo-workflows-v2-5-released-ce7553bfd84c)查看更多信息 
