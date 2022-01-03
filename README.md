@@ -500,3 +500,35 @@ STEP               TEMPLATE         PODNAME                    DURATION  MESSAGE
 ## Argo Dashboard ##
 
 从 V2.5 开始，Argo UI 已被 Argo Server 取代。 新 UI 不是只读的——它还具有直接在浏览器中创建和更新数据的能力。 点击[这里](https://blog.argoproj.io/argo-workflows-v2-5-released-ce7553bfd84c)查看更多信息 
+![image](https://www.eksworkshop.com/images/argo-workflow/argo-dashboard.png)
+## 访问 Argo Server ##
+
+为了访问仪表板，我们将通过添加 LoadBalancer 来公开 argo-server 服务。 
+
+```
+kubectl -n argo patch svc argo-server  \
+   -p '{"spec": {"type": "LoadBalancer"}}'
+```
+要访问 Argo 仪表板，请点击以下命令生成的 URL：
+
+```
+ARGO_URL=$(kubectl -n argo get svc argo-server --template "{{ range (index .status.loadBalancer.ingress 0) }}{{ . }}{{ end }}")
+
+echo ARGO DASHBOARD: http://${ARGO_URL}:2746
+```
+
+您将看到 [Advanced Batch Workflow](https://www.eksworkshop.com/advanced/410_batch/workflow-advanced/) 中的*teardrop*工作流程。 单击它以查看工作流程的可视化。 
+
+![image](https://www.eksworkshop.com/images/argo-workflow/argo-workflow.png)
+
+工作流应该看起来像一个泪珠，并为每个作业提供实时状态。 单击 *Hotel*以查看Hotel工作的摘要。 
+
+![image](https://www.eksworkshop.com/images/argo-workflow/argo-hotel-job.png)
+
+这详细说明了有关该作业的基本信息，并包括指向日志的链接。 Hotel作业日志列出了作业依赖链和当前的 whalesay，应该类似于：
+
+![image](https://www.eksworkshop.com/images/argo-workflow/argo-logs.png)
+
+探索工作流中的其他作业以查看每个作业的状态和日志。 
+
+
