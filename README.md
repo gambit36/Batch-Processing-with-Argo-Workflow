@@ -531,4 +531,42 @@ echo ARGO DASHBOARD: http://${ARGO_URL}:2746
 
 探索工作流中的其他作业以查看每个作业的状态和日志。 
 
+## 清理
 
+**删除所有工作流 **
+
+```
+argo -n argo delete --all
+```
+
+**删除Artifact Repository**
+
+```
+aws s3 rb s3://batch-artifact-repository-${ACCOUNT_ID}/ --force
+```
+
+**删除AGRO**
+
+```
+kubectl delete -n argo -f https://raw.githubusercontent.com/argoproj/argo-workflows/${ARGO_VERSION}/manifests/install.yaml
+
+kubectl delete namespace argo
+```
+
+**删除Kubernetes Job**
+
+```
+kubectl delete job/whalesay
+```
+
+**删除内联策略**
+
+```
+ aws iam delete-role-policy --role-name $ROLE_NAME --policy-name S3-Policy-For-Worker
+```
+
+**删除目录和文件**
+
+```
+rm -rf ~/environment/batch_policy
+```
