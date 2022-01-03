@@ -120,3 +120,146 @@ argo version --short
 
 argo: v2.12.13
 ```
+
+## 部署 Argo Controller
+
+Argo 在其自己的命名空间中运行并部署为 CustomResourceDefinition。
+
+部署Controller和 UI。 
+
+```
+kubectl create namespace argo
+kubectl apply -n argo -f https://raw.githubusercontent.com/argoproj/argo-workflows/${ARGO_VERSION}/manifests/install.yaml
+```
+```
+customresourcedefinition.apiextensions.k8s.io/clusterworkflowtemplates.argoproj.io created
+customresourcedefinition.apiextensions.k8s.io/cronworkflows.argoproj.io created
+customresourcedefinition.apiextensions.k8s.io/workflows.argoproj.io created
+customresourcedefinition.apiextensions.k8s.io/workflowtemplates.argoproj.io created
+serviceaccount/argo created
+serviceaccount/argo-server created
+role.rbac.authorization.k8s.io/argo-role created
+clusterrole.rbac.authorization.k8s.io/argo-aggregate-to-admin created
+clusterrole.rbac.authorization.k8s.io/argo-aggregate-to-edit created
+clusterrole.rbac.authorization.k8s.io/argo-aggregate-to-view created
+clusterrole.rbac.authorization.k8s.io/argo-cluster-role created
+clusterrole.rbac.authorization.k8s.io/argo-server-cluster-role created
+rolebinding.rbac.authorization.k8s.io/argo-binding created
+clusterrolebinding.rbac.authorization.k8s.io/argo-binding created
+clusterrolebinding.rbac.authorization.k8s.io/argo-server-binding created
+configmap/workflow-controller-configmap created
+service/argo-server created
+service/workflow-controller-metrics created
+deployment.apps/argo-server created
+deployment.apps/workflow-controller created
+```
+
+## 配置service account以运行工作流 ##
+为了让 Argo 支持artifacts、输出、访问机密等功能，它需要使用 Kubernetes API 与 Kubernetes 资源进行通信。 为了与 Kubernetes API 通信，Argo 使用 ServiceAccount 向 Kubernetes API 验证自己。 您可以通过使用 RoleBinding 将role绑定到 ServiceAccount 来指定 Argo 使用的 ServiceAccount 的哪个角色（即哪些权限） 
+
+```
+kubectl -n argo create rolebinding default-admin --clusterrole=admin --serviceaccount=argo:default
+```
+
+## 配置 Artifact Repository##
+Argo 使用Artifact Repository在工作流中的作业之间传递数据，称为Artifacts。 Amazon S3 可用作Artifact Repository。
+
+让我们使用 AWS CLI 创建一个 S3 存储桶。 
+```
+aws s3 mb s3://batch-artifact-repository-${ACCOUNT_ID}/
+```
+接下来，我们将在 configmap workflow-controller-configmap 中添加这个桶作为 argo artifactRepository
+
+创建 patch
+
+```
+cat <<EoF > ~/environment/batch_policy/argo-patch.yaml
+data:
+  config: |
+    artifactRepository:
+      s3:
+        bucket: batch-artifact-repository-${ACCOUNT_ID}
+        endpoint: s3.amazonaws.com
+EoF
+```
+
+部署 patch
+
+```
+kubectl -n argo patch \
+  configmap/workflow-controller-configmap \
+  --patch "$(cat ~/environment/batch_policy/argo-patch.yaml)"
+```
+
+校验configmap
+
+```
+kubectl -n argo get configmap/workflow-controller-configmap -o yaml
+```
+
+输出
+```
+apiVersion: v1
+data:
+  config: |-
+    artifactRepository:
+      s3:
+        bucket: batch-artifact-repository-197520326489
+        endpoint: s3.amazonaws.com
+kind: ConfigMap
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","kind":"ConfigMap","metadata":{"annotations":{},"name":"workflow-controller-configmap","namespace":"argo"}}
+  creationTimestamp: "2020-07-07T19:07:48Z"
+  name: workflow-controller-configmap
+  namespace: argo
+  resourceVersion: "1082653"
+  selfLink: /api/v1/namespaces/argo/configmaps/workflow-controller-configmap
+  uid: a1accd9e-c528-41a3-b811-226f5662c446
+  ```
+  
+## 创建一个IAM Policy
+  
+为了让 Argo 读取/写入 S3 存储桶，我们需要配置内联策略并将其添加到工作节点的 EC2 实例配置文件中。
+
+首先，我们需要确保在我们的环境中设置了我们的工作人员使用的角色名称： 
+```
+test -n "$ROLE_NAME" && echo ROLE_NAME is "$ROLE_NAME" || echo ROLE_NAME is not set
+```
+
+如果您收到错误或空响应，请查看：[/030_eksctl/test/](https://www.eksworkshop.com/030_eksctl/test/) 
+
+```
+# Example Output
+ROLE_NAME is eksctl-eksworkshop-eksctl-nodegro-NodeInstanceRole-RPDET0Z4IJIF
+```
+
+创建和策略并附加到工作节点角色。 
+
+```
+cat <<EoF > ~/environment/batch_policy/k8s-s3-policy.json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:*"
+      ],
+      "Resource": [
+        "arn:aws:s3:::batch-artifact-repository-${ACCOUNT_ID}",
+        "arn:aws:s3:::batch-artifact-repository-${ACCOUNT_ID}/*"
+      ]
+    }
+  ]
+}
+EoF
+
+aws iam put-role-policy --role-name $ROLE_NAME --policy-name S3-Policy-For-Worker --policy-document file://~/environment/batch_policy/k8s-s3-policy.json
+```
+
+验证策略是否附加到角色 
+```
+aws iam get-role-policy --role-name $ROLE_NAME --policy-name S3-Policy-For-Worker
+```
